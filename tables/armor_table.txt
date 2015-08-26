@@ -1,0 +1,3 @@
+defense,1
+status,1
+status_enabled,1

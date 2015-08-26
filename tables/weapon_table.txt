@@ -1,0 +1,5 @@
+attack,1
+zero,1
+critrate,1
+status,1
+status_enabled,1

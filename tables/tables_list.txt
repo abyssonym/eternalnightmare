@@ -1,0 +1,19 @@
+# objname tablefile address count grouped
+CharStatsObject     char_stats_table.txt    c0000   7
+WeaponObject        weapon_table.txt        c0262   90
+ArmorObject         armor_table.txt         c047e   58
+AccessoryObject     accessory_table.txt     c052c   40
+Accessory2Object    accessory_2_table.txt   c0a1c   40
+TechObject          tech_table.txt          c214b   56
+TechMPObject        tech_mp_table.txt       c253b   56
+DoubleReqObject     double_req_table.txt    c28db   45
+TripleReqObject     triple_req_table.txt    c2935   15
+MonsterObject       monster_table.txt       c4700   256
+DropObject          drop_table.txt          c5e00   256
+TreasureObject      treasure_table.txt      35f402  249
+#TechNameObject      tech_name_table.txt     c15cf   116
+#ShopObject c2c6d
+#MonsterNameObject   monster_name_table.txt  c6500   251
+#MonsterSkillObject  monster_skill_table.txt c7ac9   256
+#MonsterAIObject     monster_ai_table.txt    c8b08   256
+#PortraitObject      portrait_table.txt      3f1f80  7

@@ -1,0 +1,5 @@
+xp,2
+gp,2
+item,1
+charm,1
+tp,1
