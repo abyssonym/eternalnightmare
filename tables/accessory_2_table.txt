@@ -1,1 +1,3 @@
-misc,4
+misc,1
+price,2
+equippable,1

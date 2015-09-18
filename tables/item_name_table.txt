@@ -1,0 +1,2 @@
+icon,1
+text,10,list

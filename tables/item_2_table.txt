@@ -1,0 +1,5 @@
+misc,1
+price,2
+equippable,1
+power,1
+element,bit:val1 val2 val4 val8 fire water shadow lightning

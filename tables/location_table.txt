@@ -1,0 +1,11 @@
+music,1
+tileset,1
+tilechunks,1
+palette,1
+mapindex,2
+ignored,2
+events,2
+left,1
+top,1
+right,1
+bottom,1
