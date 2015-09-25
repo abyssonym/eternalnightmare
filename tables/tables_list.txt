@@ -9,6 +9,7 @@ ItemNameObject      item_name_table.txt     c0b5e   243
 TechNameObject      tech_name_table.txt     c15cf   116
 TechObject          tech_table.txt          c213f   85
 TechMPObject        tech_mp_table.txt       c253b   56
+CharGrowthObject    char_growth_table.txt   c25fa   7
 DoubleReqObject     double_req_table.txt    c28db   45
 TripleReqObject     triple_req_table.txt    c2935   15
 ShopItemObject      shop_item_table.txt     c2c6d   24  pointed c0000   2

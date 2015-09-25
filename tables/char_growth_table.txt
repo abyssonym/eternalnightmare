@@ -1,0 +1,7 @@
+power,1
+stamina,1
+speed,1
+hit,1
+evade,1
+magic,1
+mdef,1

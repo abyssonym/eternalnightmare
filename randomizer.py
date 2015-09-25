@@ -37,17 +37,60 @@ class TextObject(object):
     def name(self):
         return bytes_to_text(self.text)
 
-
-class CharStatsObject(TableObject): pass
 class WeaponObject(TableObject): pass
 class ArmorObject(TableObject): pass
 class AccessoryObject(TableObject): pass
 class Item2Object(TableObject): pass
+
+class CharStatsObject(TableObject):
+    mutate_attributes = {
+        "max_hp": (1, 999),
+        "max_mp": (1, 99),
+        "power_base": (1, 99),
+        "stamina_base": (1, 99),
+        "speed": (1, 15),
+        "magic_base": (1, 99),
+        "hit_base": (1, 99),
+        "evade_base": (1, 99),
+        "mdef_base": (1, 99),
+        #"helmet": Item2Object,
+        #"armor": Item2Object,
+        #"weapon": Item2Object,
+        #"accessory": Item2Object,
+        }
+    intershuffle_attributes = [
+        "power_base", "stamina_base", "magic_base",
+        "hit_base", "evade_base", "mdef_base", "speed"] + ["unknown2"]
+
+    def cleanup(self):
+        growth = CharGrowthObject.get(self.index)
+        for attr in ["power", "stamina", "magic", "hit",
+                     "evade", "mdef"]:
+            baseattr = "%s_base" % attr
+            increase = getattr(growth, attr) * (self.level-1) / 100
+            initial = getattr(self, baseattr) + increase
+            setattr(self, attr, initial)
+        self.hp = self.max_hp
+        self.mp = self.max_mp
+
 class Accessory2Object(TableObject): pass
 class ItemNameObject(TableObject, TextObject): pass
 class TechNameObject(TableObject, TextObject): pass
 class TechObject(TableObject): pass
 class TechMPObject(TableObject): pass
+
+class CharGrowthObject(TableObject):
+    mutate_attributes = {
+        "power": None,
+        "stamina": None,
+        "magic": None,
+        "hit": None,
+        "evade": None,
+        "mdef": None,
+        }
+    intershuffle_attributes = [
+        "power", "stamina", "magic", "hit", "evade", "mdef"]
+
 class DoubleReqObject(TableObject): pass
 class TripleReqObject(TableObject): pass
 class ShopItemObject(TableObject): pass
@@ -98,10 +141,16 @@ if __name__ == "__main__":
     for t, tp in zip(TechObject.every, techpointers):
         t.pointer = tp
     '''
+    for ao in all_objects:
+        ao.full_randomize()
+    for ao in all_objects:
+        ao.full_cleanup()
 
-    for i, t in enumerate(TechNameObject):
-        print "%x" % i, t.name
-    import pdb; pdb.set_trace()
+    for c in CharStatsObject.every:
+        print c.long_description
+        print "---"
+        print CharGrowthObject.get(c.index).long_description
+        print
 
     for ao in all_objects:
         ao.write_all(outfile)

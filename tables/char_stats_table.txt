@@ -29,7 +29,11 @@ weapon,1
 accessory,1
 xpnext,2
 tpnext,2
-unknown3,2
-zero4,1
-unknown4,4
+power_base,1
+stamina_base,1
+speed_zero,1
+hit_base,1
+evade_base,1
+magic_base,1
+mdef_base,1
 ff,26,list
