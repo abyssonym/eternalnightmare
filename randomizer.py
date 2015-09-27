@@ -62,7 +62,7 @@ class CharStatsObject(TableObject):
         }
     intershuffle_attributes = [
         "power_base", "stamina_base", "magic_base",
-        "hit_base", "evade_base", "mdef_base", "speed"] + ["unknown2"]
+        "hit_base", "evade_base", "mdef_base", "speed"]
 
     @classproperty
     def after_order(self):
