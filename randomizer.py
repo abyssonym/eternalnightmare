@@ -102,6 +102,7 @@ class TechMPObject(TableObject): pass
 
 
 class GrowthObject:
+    flag = "c"
     groupshuffle_enabled = True
 
     @classmethod
@@ -146,6 +147,7 @@ class MPGrowthObject(GrowthObject, TableObject):
 
 
 class CharGrowthObject(TableObject):
+    flag = "c"
     mutate_attributes = {
         "power": None,
         "stamina": None,
@@ -159,6 +161,7 @@ class CharGrowthObject(TableObject):
 
 
 class ExperienceObject(TableObject):
+    flag = "c"
     mutate_attributes = {"experience": (1, 65535)}
 
 
