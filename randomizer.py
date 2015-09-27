@@ -1,21 +1,11 @@
-from randomtools.tablereader import (
-    TableObject, set_global_table_filename, sort_good_order)
+from randomtools.tablereader import TableObject
 from randomtools.utils import (
-    read_multi, write_multi, classproperty, mutate_normal, hexstring,
-    rewrite_snes_title, rewrite_snes_checksum,
+    classproperty, mutate_normal,
     utilrandom as random)
-from shutil import copyfile
-from os import path
-from sys import argv
-from time import time
+from randomtools.interface import (
+    run_interface, rewrite_snes_meta, finish_interface)
 import string
 
-
-try:
-    from sys import _MEIPASS
-    tblpath = path.join(_MEIPASS, "tables")
-except ImportError:
-    tblpath = "tables"
 
 RANDOMIZE = True
 VERSION = 1
@@ -46,6 +36,9 @@ class Item2Object(TableObject): pass
 
 
 class CharStatsObject(TableObject):
+    flag = "c"
+    flag_description = "character stats"
+
     mutate_attributes = {
         "power_base": (1, 99),
         "stamina_base": (1, 99),
@@ -186,65 +179,13 @@ def add_singing_mountain():
 
 
 if __name__ == "__main__":
-    if len(argv) >= 2:
-        sourcefile = argv[1]
-        if len(argv) >= 3:
-            seed = int(argv[2])
-        else:
-            seed = None
-    else:
-        sourcefile = raw_input("Filename? ")
-        seed = raw_input("Seed? ")
-
-    if seed is None or seed == "":
-        seed = int(time())
-    seed = seed % (10**10)
-
-    outfile = sourcefile.split(".")
-    outfile = outfile[:-1] + [str(seed), outfile[-1]]
-    txtfile = ".".join(outfile[:-1] + ["txt"])
-    outfile = ".".join(outfile)
-    copyfile(sourcefile, outfile)
-    set_global_table_filename(outfile)
-
     all_objects = [g for g in globals().values()
                    if isinstance(g, type) and issubclass(g, TableObject)
                    and g not in [TableObject]]
-    all_objects = sort_good_order(all_objects)
-    for ao in all_objects:
-        ao.every
+    run_interface(all_objects)
+    add_singing_mountain()
+    rewrite_snes_meta("CT-R", VERSION, megabits=32)
+    finish_interface()
 
-    '''
-    techpointers = [t.pointer for t in TechObject.every]
-    random.shuffle(techpointers)
-    for t, tp in zip(TechObject.every, techpointers):
-        t.pointer = tp
-    '''
-    for ao in all_objects:
-        ao.full_randomize()
-    for ao in all_objects:
-        ao.full_cleanup()
-
-    for c in CharStatsObject.every:
-        print c.long_description
-        print "---"
-        print CharGrowthObject.get(c.index).long_description
-        print
-
-    for ao in all_objects:
-        ao.write_all(outfile)
-
-    rewrite_snes_title("CT-R %s" % seed, outfile, VERSION)
-    rewrite_snes_checksum(outfile, megabits=32)
-
-    '''
-    s = ""
-    for ao in sorted(all_objects, key=lambda a: a.__name__):
-        s += ao.__name__.upper() + "\n"
-        s += ao.catalogue
-        s += "\n\n"
-    s = s.strip()
-    f = open(txtfile, "w+")
-    f.write(s + "\n")
-    f.close()
-    '''
+    #rewrite_snes_title("CT-R %s" % seed, outfile, VERSION)
+    #rewrite_snes_checksum(outfile, megabits=32)
