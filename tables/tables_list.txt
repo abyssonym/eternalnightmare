@@ -17,12 +17,12 @@ ExperienceObject    experience_table.txt    c2634   98
 DoubleReqObject     double_req_table.txt    c28db   45
 TripleReqObject     triple_req_table.txt    c2935   15
 ShopItemObject      shop_item_table.txt     c2c6d   24  pointed c0000   2
-MonsterObject       monster_table.txt       c4700   256
-DropObject          drop_table.txt          c5e00   256
+MonsterObject       monster_table.txt       c4700   251
+DropObject          drop_table.txt          c5e00   251
 TreasureObject      treasure_table.txt      35f402  249
 LocationObject      location_table.txt      360000  512
 #TechTargetObject    tech_target_table.txt   c1acb   85
-#MonsterNameObject   monster_name_table.txt  c6500   251
-#MonsterSkillObject  monster_skill_table.txt c7ac9   256
-#MonsterAIObject     monster_ai_table.txt    c8b08   256
+MonsterNameObject   monster_name_table.txt  c6500   251
+#MonsterSkillObject  monster_skill_table.txt c7ac9   251
+#MonsterAIObject     monster_ai_table.txt    c8b08   251
 #PortraitObject      portrait_table.txt      3f1f80  7

@@ -1,15 +1,20 @@
 hp,2
 level,1
-unknown1,6
+unknown1,2
+zero1,2
+unknown_ozzie,1
+unknown2,1
 speed,1
 magic,1
-unknown2,3
+hit,1
+evade,1
+magic_defense,1
 offense,1
 defense,1
 lightning,1
 shadow,1
 water,1
 fire,1
-evade,1
-misc,1
+misc1,bit:z1 floating physical_invincible z2 z3 unk1 unk2 bosslike
+misc2,bit:bossdeath noscope unk_black_tyrano weird_defense aquatic z4 robotic
 unknown3,1

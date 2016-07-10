@@ -13,14 +13,15 @@ VERSION = 1
 
 texttable = [(0xA0+i, c) for (i, c) in
              enumerate(string.uppercase + string.lowercase + string.digits)]
-texttable += [(0xFF, ' '), (0xE7, "'"), (0xE8, '.'), (0x2f, '*')]
+texttable += [(0xFF, ' '), (0xE7, "'"), (0xE8, '.'), (0xEB, '-'),
+              (0xDF, '?'), (0xE4, "&"), (0x2f, '*')]
 texttable += [(c, i) for (i, c) in texttable]
 texttable = dict(texttable)
 texttable[0xEF] = "~"
 
 
 def bytes_to_text(data):
-    return "".join([texttable[d] for d in data])
+    return "".join([texttable[d] if d in texttable else "!" for d in data])
 
 
 class TextObject(object):
@@ -168,7 +169,48 @@ class ExperienceObject(TableObject):
 class DoubleReqObject(TableObject): pass
 class TripleReqObject(TableObject): pass
 class ShopItemObject(TableObject): pass
-class MonsterObject(TableObject): pass
+class MonsterNameObject(TableObject, TextObject): pass
+
+class MonsterObject(TableObject):
+    flag = "m"
+    flag_description = "enemy stats"
+    mutate_attributes = {"hp": (0, 30000),
+                         "level": (0, 99),
+                         "speed": (1, 17),
+                         "magic": (0, 250),
+                         "magic_defense": (0, 100),
+                         "offense": (0, 255),
+                         "defense": (0, 255),
+                         }
+    intershuffle_attributes = [
+        "speed", "magic", "offense", "hit",
+        "lightning", "shadow", "water", "fire", "evade"]
+    shuffle_attributes = [
+        ("lightning", "shadow", "water", "fire"),
+        ("offense", "magic"),
+        ]
+
+    @property
+    def rank(self):
+        attrs = {"hp": 1,
+                 "level": 300,
+                 "speed": 1750,
+                 "magic": 120,
+                 "magic_defense": 100,
+                 "offense": 120,
+                 "defense": 120,
+                 }
+        return sum([(b*getattr(self, a)) for (a, b) in attrs.items()])
+
+    @property
+    def intershuffle_valid(self):
+        return True
+
+    @property
+    def name(self):
+        return MonsterNameObject.get(self.index).name
+
+
 class DropObject(TableObject): pass
 class TreasureObject(TableObject): pass
 class LocationObject(TableObject): pass
@@ -185,10 +227,11 @@ if __name__ == "__main__":
     all_objects = [g for g in globals().values()
                    if isinstance(g, type) and issubclass(g, TableObject)
                    and g not in [TableObject]]
-    run_interface(all_objects)
-    add_singing_mountain()
+    run_interface(all_objects, snes=True)
+    #for m in MonsterObject.every:
+    #    assert m.zero1 == 0
+    #    #print "%x" % m.index, m.name, int(m.get_bit("unk4")), int(m.get_bit("unk5")), int(m.get_bit("unk6"))
+    #    print "%x" % m.index, m.name, m.offense, m.magic, m.hp
+    minmax = lambda x: (min(x), max(x))
     rewrite_snes_meta("CT-R", VERSION, megabits=32)
     finish_interface()
-
-    #rewrite_snes_title("CT-R %s" % seed, outfile, VERSION)
-    #rewrite_snes_checksum(outfile, megabits=32)
