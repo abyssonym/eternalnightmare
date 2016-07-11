@@ -199,6 +199,13 @@ class Item2Object(TableObject):
 
     def mutate(self):
         self.price = mutate_normal(self.price, minimum=0, maximum=65000)
+        value = self.price * 2
+        power = 0
+        while value > 10:
+            value /= 10
+            power += 1
+        value = (value * (10**power)) / 2
+        self.price = value
         if self.equippable and not self.is_weapon:
             self.equippable = random.randint(1, 127) << 1
 
@@ -380,7 +387,39 @@ class ExperienceObject(TableObject):
 
 class DoubleReqObject(TableObject): pass
 class TripleReqObject(TableObject): pass
-class ShopItemObject(TableObject): pass
+
+
+class ShopItemObject(TableObject):
+    flag = "p"
+    flag_description = "shops"
+
+    @classmethod
+    def mutate_all(cls):
+        numgroups = len(cls.groups)
+        reassignments = range(numgroups)
+        random.shuffle(reassignments)
+        reassignments = dict(zip(range(numgroups), reassignments))
+        for o in cls.every:
+            o.groupindex = reassignments[o.groupindex]
+
+        for n, group in sorted(cls.groups.items()):
+            print n, len(group)
+            for i, o in enumerate(group):
+                done = [o2.item for o2 in group[:i]]
+                item = ItemObject.get(o.item)
+                while True:
+                    new_item = item.get_similar()
+                    if new_item.full_index in done:
+                        continue
+                    print item.name, new_item.name
+                    o.item = new_item.full_index
+                    break
+            indices_sorted = sorted(group[:-1], key=lambda i: i.item)
+            indices_sorted = [i.item for i in indices_sorted]
+            for (a, b) in zip(group, indices_sorted):
+                a.item = b
+
+
 class MonsterNameObject(TableObject, TextObject): pass
 
 
@@ -526,10 +565,9 @@ if __name__ == "__main__":
     minmax = lambda x: (min(x), max(x))
     add_singing_mountain()
     clean_and_write(ALL_OBJECTS)
-    for c in CharStatsObject.every:
-        print c.name
-        for attr in ["weapon", "helmet", "armor", "accessory"]:
-            print ItemObject.get(getattr(c, attr)).name
+    for index, group in sorted(ShopItemObject.groups.items()):
+        for si in group:
+            print "%x" % si.item, ItemObject.get(si.item).name
         print
     rewrite_snes_meta("CT-R", VERSION, megabits=32)
     finish_interface()
