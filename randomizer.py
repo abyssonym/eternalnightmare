@@ -453,9 +453,11 @@ class MonsterObject(TableObject):
                          "magic_defense": (0, 100),
                          "offense": (0, 255),
                          "defense": (0, 255),
+                         "evade": (1, 100),
+                         "hit": (0, 100),
                          }
     intershuffle_attributes = [
-        "speed", "magic", "hit",
+        "offense", "speed", "magic", "hit",
         "lightning", "shadow", "water", "fire", "evade"]
     shuffle_attributes = [
         ("lightning", "shadow", "water", "fire"),
@@ -480,6 +482,16 @@ class MonsterObject(TableObject):
     @property
     def name(self):
         return MonsterNameObject.get(self.index).name
+
+    def mutate(self):
+        oldstats = {}
+        for key in self.mutate_attributes:
+            oldstats[key] = getattr(self, key)
+        super(MonsterObject, self).mutate()
+        if self.get_bit("bosslike"):
+            for (attr, oldval) in oldstats.items():
+                if getattr(self, attr) < oldval:
+                    setattr(self, attr, oldval)
 
 
 class DropObject(TableObject):
