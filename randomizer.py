@@ -413,17 +413,18 @@ class ShopItemObject(TableObject):
             o.groupindex = reassignments[o.groupindex]
 
         for n, group in sorted(cls.groups.items()):
-            print n, len(group)
             for i, o in enumerate(group):
                 done = [o2.item for o2 in group[:i]]
                 item = ItemObject.get(o.item)
-                while True:
+                for _ in xrange(100):
                     new_item = item.get_similar()
-                    if new_item.full_index in done:
-                        continue
-                    print item.name, new_item.name
-                    o.item = new_item.full_index
-                    break
+                    if new_item.full_index not in done:
+                        break
+                else:
+                    candidates = [i for i in ItemObject.every_buyable
+                                  if i.full_index not in done]
+                    new_item = random.choice(candidates)
+                o.item = new_item.full_index
             indices_sorted = sorted(group[:-1], key=lambda i: i.item)
             indices_sorted = [i.item for i in indices_sorted]
             for (a, b) in zip(group, indices_sorted):
@@ -568,6 +569,8 @@ def add_singing_mountain():
 
 
 if __name__ == "__main__":
+    print ("You are using the Chrono Trigger: Eternal Nightmare randomizer "
+           "version %s." % VERSION)
     ALL_OBJECTS = [g for g in globals().values()
                    if isinstance(g, type) and issubclass(g, TableObject)
                    and g not in [TableObject]]
@@ -575,10 +578,6 @@ if __name__ == "__main__":
     minmax = lambda x: (min(x), max(x))
     add_singing_mountain()
     clean_and_write(ALL_OBJECTS)
-    for index, group in sorted(ShopItemObject.groups.items()):
-        for si in group:
-            print "%x" % si.item, ItemObject.get(si.item).name
-        print
     randomize_rng(0xFE00)
     randomize_rng(0x3DBA61)
     rewrite_snes_meta("CT-R", VERSION, megabits=32)
