@@ -216,7 +216,7 @@ class Item2Object(TableObject):
         value = mutate_normal(self.price, minimum=0, maximum=65000)
         value = value * 2
         power = 0
-        while value > 10:
+        while value > 100:
             value /= 10
             power += 1
         value = (value * (10**power)) / 2
