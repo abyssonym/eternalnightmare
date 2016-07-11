@@ -1,0 +1,41 @@
+Chrono Trigger: Eternal Nightmare Randomizer
+Version:    1
+Date:       July 11, 2016
+URL:        https://github.com/abyssonym/eternalnightmare
+Contact:    https://twitter.com/abyssonym
+            https://www.twitch.tv/abyssonym
+
+--- HOW TO USE ---
+Introduction:
+    Compared to my other projects, this is more like a randomize-ish than a randomizer. There are some things about Chrono Trigger that make it more difficult to randomize than other games I've done. Thus, this randomizer makes pretty conservative changes, especially if you're used to stuff from FF6 BC and FFT RCC. I did what I could to make it interesting, though.
+    Oh yeah, also, this is almost 0% field tested, so have fun with whatever bugs you find and be sure to report them back to me.
+
+Running the randomizer:
+    Windows users may use the executable file, "ct_eternal_nightmare.exe". Other users, please run "randomizer.py" using Python version 2.7.
+
+Source rom file:
+    This randomizer requires the North American SNES Chrono Trigger rom. The rom used for testing had the following verification hash.
+    MD5 - a2bc447961e52fd2227baed164f729dc
+
+Flags:
+    Input the following flags to customize your randomization experience.
+
+    c  Randomize character stats.
+    m  Randomize enemy stats.
+    p  Randomize shops.
+    q  Randomize equipment stats.
+    t  Randomize treasure.
+
+Seed value:
+    Input a seed value here, or leave it blank if you don't care.
+
+Output files:
+    The randomizer will output a new, randomized rom with the seed in the filename.
+
+Like this randomizer? Be sure to check out my other projects:
+    FF6 Beyond Chaos Randomizer
+        https://github.com/abyssonym/beyondchaos
+    FF Tactics Rumble Chaos Crashdown Randomizer
+        https://github.com/abyssonym/rumble_chaos_crashdown
+    Breath of Fire 2 Painsong Randomizer
+        https://github.com/abyssonym/painsong
