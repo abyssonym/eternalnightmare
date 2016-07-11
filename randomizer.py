@@ -99,9 +99,12 @@ class ItemObject(object):
     @property
     def rank_price(self):
         price = self.item2.price
-        if self.is_armor and price >= 20 and (self.status_enabled or
-                                              self.item2.element):
-            price *= 2
+        if ((self.is_armor or self.is_helmet) and price >= 20 and
+                (self.status_enabled or self.item2.element)):
+            if self.is_armor:
+                price *= 3
+            elif self.is_helmet:
+                price *= 2
         return price
 
     @property
