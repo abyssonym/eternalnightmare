@@ -3,7 +3,7 @@ from randomtools.utils import (
     classproperty, mutate_normal,
     utilrandom as random)
 from randomtools.interface import (
-    run_interface, rewrite_snes_meta, finish_interface)
+    run_interface, rewrite_snes_meta, clean_and_write, finish_interface)
 import string
 
 
@@ -42,6 +42,18 @@ class TextObject(object):
         return bytes_to_text(self.text)
 
 
+class CharObject(object):
+    @property
+    def name(self):
+        return {0: "Crono",
+                1: "Marle",
+                2: "Lucca",
+                3: "Robo",
+                4: "Frog",
+                5: "Ayla",
+                6: "Magus"}[self.index]
+
+
 class ItemObject(object):
     first_index = 0
 
@@ -54,8 +66,28 @@ class ItemObject(object):
         return self.first_index + self.index
 
     @property
+    def is_weapon(self):
+        return self.full_index <= 0x59
+
+    @property
+    def is_armor(self):
+        return 0x5A <= self.full_index <= 0x7A
+
+    @property
+    def is_helmet(self):
+        return 0x7B <= self.full_index <= 0x93
+
+    @property
+    def is_accessory(self):
+        return 0x94 <= self.full_index <= 0xBB
+
+    @property
+    def item2(self):
+        return Item2Object.get(self.index + self.first_index)
+
+    @property
     def rank_price(self):
-        return Item2Object.get(self.index + self.first_index).price
+        return self.item2.price
 
     @property
     def intershuffle_valid(self):
@@ -69,6 +101,10 @@ class ItemObject(object):
                    if issubclass(o, ItemObject) and o is not ItemObject]
         objects = [o for ob in objects for o in ob.every]
         return objects
+
+    @classproperty
+    def every_equippable(self):
+        return [i for i in self.every_item if hasattr(i, "equippable")]
 
     @classproperty
     def every_buyable(self):
@@ -109,6 +145,12 @@ class ItemObject(object):
             result = self
         return result
 
+    def make_equippable(self, index):
+        if self.is_armor or self.is_helmet:
+            self.item2.equippable |= (0x80 >> index)
+        if self.is_accessory:
+            self.equippable |= (0x80 >> index)
+
 
 class WeaponObject(ItemObject, TableObject):
     flag = "q"
@@ -118,11 +160,19 @@ class WeaponObject(ItemObject, TableObject):
                          }
     intershuffle_attributes = ["critrate"]
 
+    @property
+    def equippable(self):
+        return self.item2.equippable
+
 
 class ArmorObject(ItemObject, TableObject):
     first_index = 0x5A
     flag = "q"
     mutate_attributes = {"power": (0, 99)}
+
+    @property
+    def equippable(self):
+        return self.item2.equippable
 
 
 class AccessoryObject(TableObject): pass
@@ -153,7 +203,7 @@ class Item2Object(TableObject):
             self.equippable = random.randint(1, 127) << 1
 
 
-class CharStatsObject(TableObject):
+class CharStatsObject(CharObject, TableObject):
     flag = "c"
     flag_description = "character stats"
 
@@ -178,6 +228,11 @@ class CharStatsObject(TableObject):
     @classproperty
     def after_order(self):
         return [HPGrowthObject, MPGrowthObject]
+
+    def can_equip(self, item):
+        if isinstance(item, int):
+            item = ItemObject.get(item)
+        return bool(item.equippable & (0x80 >> self.index))
 
     def cleanup(self):
         growth = CharGrowthObject.get(self.index)
@@ -210,6 +265,30 @@ class CharStatsObject(TableObject):
         else:
             self.xp = 0
         self.xpnext = ExperienceObject.get(self.level-1).experience
+
+        for attr in ["helmet", "armor"]:
+            current = getattr(self, attr)
+            if self.can_equip(current):
+                continue
+            candidates = [c for c in ItemObject.every_equippable
+                          if getattr(c, "is_%s" % attr) and
+                          self.can_equip(c) and
+                          c.buyable]
+            if not candidates:
+                candidates = [c for c in ItemObject.every_equippable
+                              if getattr(c, "is_%s" % attr) and
+                              c.buyable]
+            chosen = min(candidates, key=lambda c: c.rank_price)
+            chosen.make_equippable(self.index)
+            setattr(self, attr, chosen.full_index)
+        current = ItemObject.get(self.accessory)
+        if not self.can_equip(current):
+            candidates = [c for c in Accessory2Object.every
+                          if self.can_equip(c)]
+            if candidates:
+                chosen = random.choice(candidates)
+                chosen.make_equippable(self.index)
+                self.accessory = chosen.full_index
 
 
 class Accessory2Object(ItemObject, TableObject):
@@ -280,7 +359,7 @@ class MPGrowthObject(GrowthObject, TableObject):
         }
 
 
-class CharGrowthObject(TableObject):
+class CharGrowthObject(CharObject, TableObject):
     flag = "c"
     mutate_attributes = {
         "power": None,
@@ -444,9 +523,13 @@ if __name__ == "__main__":
                    if isinstance(g, type) and issubclass(g, TableObject)
                    and g not in [TableObject]]
     run_interface(ALL_OBJECTS, snes=True)
-    for d in DropObject.every:
-        print "%x" % d.item, ItemNameObject.get(d.item).name, "%x" % d.charm, ItemNameObject.get(d.charm).name,
-        print "%x %s %s %s" % (d.index, d.xp, d.gp, d.tp)
     minmax = lambda x: (min(x), max(x))
+    add_singing_mountain()
+    clean_and_write(ALL_OBJECTS)
+    for c in CharStatsObject.every:
+        print c.name
+        for attr in ["weapon", "helmet", "armor", "accessory"]:
+            print ItemObject.get(getattr(c, attr)).name
+        print
     rewrite_snes_meta("CT-R", VERSION, megabits=32)
     finish_interface()
