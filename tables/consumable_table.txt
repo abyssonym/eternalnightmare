@@ -1,0 +1,2 @@
+misc,bit:z1 useable_field nosell keyitem nongp z2 useable_battle
+price,2

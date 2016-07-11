@@ -9,6 +9,7 @@ import string
 
 RANDOMIZE = True
 VERSION = 1
+ALL_OBJECTS = None
 
 
 texttable = [(0xA0+i, c) for (i, c) in
@@ -22,6 +23,17 @@ texttable[0xEF] = "~"
 
 def bytes_to_text(data):
     return "".join([texttable[d] if d in texttable else "!" for d in data])
+
+
+def index_to_item_object(index):
+    if index < 0x5A:
+        cls = WeaponObject
+    elif index < 0x5A + 0x3A:
+        cls = ArmorObject
+    else:
+        cls = Accessory2Object
+    index -= cls.first_index
+    return cls.get(index)
 
 
 class TextObject(object):
@@ -38,23 +50,71 @@ class ItemObject(object):
         return ItemNameObject.get(self.index + self.first_index).name
 
     @property
-    def price(self):
+    def full_index(self):
+        return self.first_index + self.index
+
+    @property
+    def rank_price(self):
         return Item2Object.get(self.index + self.first_index).price
 
     @property
-    def rank(self):
-        return (self.power, self.price)
+    def intershuffle_valid(self):
+        if isinstance(self, ConsumableObject) and self.get_bit("keyitem"):
+            return False
+        return self.name != "~~~~~~~~~~"
+
+    @classproperty
+    def every_item(self):
+        objects = [o for o in ALL_OBJECTS
+                   if issubclass(o, ItemObject) and o is not ItemObject]
+        objects = [o for ob in objects for o in ob.every]
+        return objects
+
+    @classproperty
+    def every_buyable(self):
+        buyables = [o for o in self.every_item if o.buyable]
+        return sorted(buyables,
+            key=lambda b: (b.rank_price, b.index, str(type(b))))
+
+    @classproperty
+    def every_rare(self):
+        return [o for o in self.every_item if o.rare]
 
     @property
-    def intershuffle_valid(self):
-        return self.name != "~~~~~~~~~~"
+    def buyable(self):
+        return self.intershuffle_valid and (self.rank_price >= 20 or
+            "Tonic" in self.name or "Heal" in self.name)
+
+    @property
+    def rare(self):
+        return self.intershuffle_valid and not self.buyable
+
+    @classmethod
+    def get(self, index):
+        items = [i for i in self.every_item if i.full_index == index]
+        if not items:
+            return None
+        assert len(items) == 1
+        return items[0]
+
+    def get_similar(self):
+        if self.rare:
+            result = random.choice(self.every_rare)
+        elif self.buyable:
+            buyables = self.every_buyable
+            index = buyables.index(self)
+            index = mutate_normal(index, minimum=0, maximum=len(buyables)-1)
+            result = buyables[index]
+        else:
+            result = self
+        return result
 
 
 class WeaponObject(ItemObject, TableObject):
     flag = "q"
     flag_description = "equipment stats"
-    mutate_attributes = {"power": (0, 250),
-                         "critrate": (0, 70),
+    mutate_attributes = {"power": (0, 0xFE),
+                         "critrate": (0, 100),
                          }
     intershuffle_attributes = ["critrate"]
 
@@ -66,6 +126,14 @@ class ArmorObject(ItemObject, TableObject):
 
 
 class AccessoryObject(TableObject): pass
+
+
+class ConsumableObject(ItemObject, TableObject):
+    first_index = 0xBC
+
+    @property
+    def rank_price(self):
+        return self.price
 
 
 class Item2Object(TableObject):
@@ -144,13 +212,17 @@ class CharStatsObject(TableObject):
         self.xpnext = ExperienceObject.get(self.level-1).experience
 
 
-class Accessory2Object(TableObject):
+class Accessory2Object(ItemObject, TableObject):
     flag = "q"
     first_index = 0x5A + 0x3A
 
     @property
     def name(self):
         return ItemNameObject.get(self.index + self.first_index).name
+
+    @property
+    def rank_price(self):
+        return self.price
 
     def mutate(self):
         if bin(self.equippable).count('1') > 3:
@@ -224,7 +296,7 @@ class CharGrowthObject(TableObject):
 
 class ExperienceObject(TableObject):
     flag = "c"
-    mutate_attributes = {"experience": (1, 65535)}
+    mutate_attributes = {"experience": (1, 0xFFFE)}
 
 
 class DoubleReqObject(TableObject): pass
@@ -239,7 +311,7 @@ class MonsterObject(TableObject):
     mutate_attributes = {"hp": (0, 30000),
                          "level": (0, 99),
                          "speed": (1, 17),
-                         "magic": (0, 250),
+                         "magic": (0, 254),
                          "magic_defense": (0, 100),
                          "offense": (0, 255),
                          "defense": (0, 255),
@@ -273,8 +345,90 @@ class MonsterObject(TableObject):
         return MonsterNameObject.get(self.index).name
 
 
-class DropObject(TableObject): pass
-class TreasureObject(TableObject): pass
+class DropObject(TableObject):
+    flag = "t"
+    mutate_attributes = {"xp": (0, 0xFFFE),
+                         "gp": (0, 0xFFFE),
+                         #"item": ItemObject,
+                         #"charm": ItemObject,
+                         "tp": (0, 0xFE)}
+    intershuffle_attributes = [
+        "item", "charm",
+        ]
+    shuffle_attributes = [
+        ("item", "charm"),
+        ("xp", "gp"),
+        ]
+
+    @property
+    def intershuffle_valid(self):
+        if not (self.item or self.charm):
+            return False
+        item = ItemObject.get(self.item)
+        charm = ItemObject.get(self.charm)
+        return not (item.rare or charm.rare)
+
+    @property
+    def monster(self):
+        return MonsterObject.get(self.index)
+
+    @property
+    def rank(self):
+        return self.monster.rank
+
+    def mutate(self):
+        super(DropObject, self).mutate()
+        self.item = ItemObject.get(self.item).get_similar().full_index
+        self.charm = ItemObject.get(self.charm).get_similar().full_index
+        if self.monster.get_bit("bosslike"):
+            self.xp = 0
+        self.gp = self.gp >> 1
+
+
+class TreasureObject(TableObject):
+    flag = "t"
+    flag_description = "treasure"
+
+    @property
+    def contents_pretty(self):
+        if self.contents & 0x8000:
+            return "%s GP" % ((self.contents & 0x7fff) << 1)
+        elif self.contents & 0x4000:
+            return "Empty"
+        else:
+            try:
+                return ItemNameObject.get(self.contents & 0x3fff).name
+            except KeyError:
+                return "??????"
+
+    def mutate(self):
+        item = None
+        if self.contents & 0x8000:
+            value = (self.contents & 0x7FFF) << 1
+        elif self.contents & 0xFF00:
+            return
+        else:
+            item = ItemObject.get(self.contents & 0xff)
+            if item is None:
+                return
+            if item.rare:
+                new_item = item.get_similar()
+                self.contents = new_item.full_index
+                return
+            elif not item.buyable:
+                return
+            value = item.rank_price
+        if random.randint(1, 20) == 20:
+            value = mutate_normal(value, minimum=0, maximum=65000)
+            self.contents = 0x8000 | (value >> 1)
+            return
+        if item is None:
+            item = [i for i in ItemObject.every_buyable
+                    if i.rank_price <= value][-1]
+        new_item = item.get_similar()
+        self.contents = new_item.full_index
+
+
 class LocationObject(TableObject): pass
 
 
@@ -286,10 +440,13 @@ def add_singing_mountain():
 
 
 if __name__ == "__main__":
-    all_objects = [g for g in globals().values()
+    ALL_OBJECTS = [g for g in globals().values()
                    if isinstance(g, type) and issubclass(g, TableObject)
                    and g not in [TableObject]]
-    run_interface(all_objects, snes=True)
+    run_interface(ALL_OBJECTS, snes=True)
+    for d in DropObject.every:
+        print "%x" % d.item, ItemNameObject.get(d.item).name, "%x" % d.charm, ItemNameObject.get(d.charm).name,
+        print "%x %s %s %s" % (d.index, d.xp, d.gp, d.tp)
     minmax = lambda x: (min(x), max(x))
     rewrite_snes_meta("CT-R", VERSION, megabits=32)
     finish_interface()
