@@ -499,6 +499,13 @@ class MonsterObject(TableObject):
             for (attr, oldval) in oldstats.items():
                 if getattr(self, attr) < oldval:
                     setattr(self, attr, oldval)
+        while random.choice([True, False]):
+            el = random.choice(["fire", "water", "lightning", "shadow"])
+            if getattr(self, el) != 4 and random.choice([True, False]):
+                continue
+            value = random.choice([0, 1, 2, 3, 4, 6, 8, 64,
+                                   128, 129, 132, 143])
+            setattr(self, el, value)
 
 
 class DropObject(TableObject):
