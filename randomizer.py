@@ -98,7 +98,11 @@ class ItemObject(object):
 
     @property
     def rank_price(self):
-        return self.item2.price
+        price = self.item2.price
+        if self.is_armor and price >= 20 and (self.status_enabled or
+                                              self.item2.element):
+            price *= 2
+        return price
 
     @property
     def intershuffle_valid(self):
@@ -526,6 +530,10 @@ class DropObject(TableObject):
     @property
     def rank(self):
         return self.monster.rank
+
+    @property
+    def name(self):
+        return self.monster.name
 
     def mutate(self):
         super(DropObject, self).mutate()
