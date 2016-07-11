@@ -500,6 +500,8 @@ class DropObject(TableObject):
 
     @property
     def intershuffle_valid(self):
+        if not self.monster.intershuffle_valid:
+            return False
         if not (self.item or self.charm):
             return False
         item = ItemObject.get(self.item)
