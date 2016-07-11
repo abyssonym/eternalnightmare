@@ -30,10 +30,59 @@ class TextObject(object):
         return bytes_to_text(self.text)
 
 
-class WeaponObject(TableObject): pass
-class ArmorObject(TableObject): pass
+class ItemObject(object):
+    first_index = 0
+
+    @property
+    def name(self):
+        return ItemNameObject.get(self.index + self.first_index).name
+
+    @property
+    def price(self):
+        return Item2Object.get(self.index + self.first_index).price
+
+    @property
+    def rank(self):
+        return (self.power, self.price)
+
+    @property
+    def intershuffle_valid(self):
+        return self.name != "~~~~~~~~~~"
+
+
+class WeaponObject(ItemObject, TableObject):
+    flag = "q"
+    flag_description = "equipment stats"
+    mutate_attributes = {"power": (0, 250),
+                         "critrate": (0, 70),
+                         }
+    intershuffle_attributes = ["critrate"]
+
+
+class ArmorObject(ItemObject, TableObject):
+    first_index = 0x5A
+    flag = "q"
+    mutate_attributes = {"power": (0, 99)}
+
+
 class AccessoryObject(TableObject): pass
-class Item2Object(TableObject): pass
+
+
+class Item2Object(TableObject):
+    flag = "q"
+
+    @property
+    def name(self):
+        return ItemNameObject.get(self.index).name
+
+    @property
+    def is_weapon(self):
+        return 0 <= self.index < 0x5A
+
+    def mutate(self):
+        self.price = mutate_normal(self.price, minimum=0, maximum=65000)
+        if self.equippable and not self.is_weapon:
+            self.equippable = random.randint(1, 127) << 1
 
 
 class CharStatsObject(TableObject):
@@ -95,7 +144,19 @@ class CharStatsObject(TableObject):
         self.xpnext = ExperienceObject.get(self.level-1).experience
 
 
-class Accessory2Object(TableObject): pass
+class Accessory2Object(TableObject):
+    flag = "q"
+    first_index = 0x5A + 0x3A
+
+    @property
+    def name(self):
+        return ItemNameObject.get(self.index + self.first_index).name
+
+    def mutate(self):
+        if bin(self.equippable).count('1') > 3:
+            self.equippable = random.randint(1, 127) << 1
+
+
 class ItemNameObject(TableObject, TextObject): pass
 class TechNameObject(TableObject, TextObject): pass
 class TechObject(TableObject): pass
@@ -171,6 +232,7 @@ class TripleReqObject(TableObject): pass
 class ShopItemObject(TableObject): pass
 class MonsterNameObject(TableObject, TextObject): pass
 
+
 class MonsterObject(TableObject):
     flag = "m"
     flag_description = "enemy stats"
@@ -228,10 +290,6 @@ if __name__ == "__main__":
                    if isinstance(g, type) and issubclass(g, TableObject)
                    and g not in [TableObject]]
     run_interface(all_objects, snes=True)
-    #for m in MonsterObject.every:
-    #    assert m.zero1 == 0
-    #    #print "%x" % m.index, m.name, int(m.get_bit("unk4")), int(m.get_bit("unk5")), int(m.get_bit("unk6"))
-    #    print "%x" % m.index, m.name, m.offense, m.magic, m.hp
     minmax = lambda x: (min(x), max(x))
     rewrite_snes_meta("CT-R", VERSION, megabits=32)
     finish_interface()

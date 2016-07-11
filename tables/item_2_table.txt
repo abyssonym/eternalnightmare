@@ -1,5 +1,5 @@
 misc,1
 price,2
-equippable,1
-power,1
+equippable,bit:z1 magus ayla frog robo lucca marle crono
+stat_boost,1
 element,bit:val1 val2 val4 val8 fire water shadow lightning
