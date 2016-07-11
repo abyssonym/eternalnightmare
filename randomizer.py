@@ -9,7 +9,7 @@ import string
 
 
 RANDOMIZE = True
-VERSION = 1
+VERSION = 2
 ALL_OBJECTS = None
 
 
@@ -446,7 +446,7 @@ class MonsterObject(TableObject):
                          "defense": (0, 255),
                          }
     intershuffle_attributes = [
-        "speed", "magic", "offense", "hit",
+        "speed", "magic", "hit",
         "lightning", "shadow", "water", "fire", "evade"]
     shuffle_attributes = [
         ("lightning", "shadow", "water", "fire"),
@@ -467,7 +467,7 @@ class MonsterObject(TableObject):
 
     @property
     def intershuffle_valid(self):
-        return True
+        return self.name != "~~~~~~~~~~~" and not self.get_bit("bosslike")
 
     @property
     def name(self):
