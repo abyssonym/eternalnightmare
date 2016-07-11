@@ -36,9 +36,9 @@ def bytes_to_text(data):
 
 
 def index_to_item_object(index):
-    if index < 0x5A:
+    if index < ArmorObject.first_index:
         cls = WeaponObject
-    elif index < 0x5A + 0x3A:
+    elif index < Accessory2Object.first_index:
         cls = ArmorObject
     else:
         cls = Accessory2Object
@@ -77,19 +77,20 @@ class ItemObject(object):
 
     @property
     def is_weapon(self):
-        return self.full_index <= 0x59
+        return self.full_index < ArmorObject.first_index
 
     @property
     def is_armor(self):
-        return 0x5A <= self.full_index <= 0x7A
+        return ArmorObject.first_index <= self.full_index < 0x7B
 
     @property
     def is_helmet(self):
-        return 0x7B <= self.full_index <= 0x93
+        return 0x7B <= self.full_index < Accessory2Object.first_index
 
     @property
     def is_accessory(self):
-        return 0x94 <= self.full_index <= 0xBB
+        return (Accessory2Object.first_index <= self.full_index
+                < ConsumableObject.first_index)
 
     @property
     def item2(self):
@@ -174,9 +175,13 @@ class WeaponObject(ItemObject, TableObject):
     def equippable(self):
         return self.item2.equippable
 
+    def mutate(self):
+        if self.intershuffle_valid:
+            super(WeaponObject, self).mutate()
+
 
 class ArmorObject(ItemObject, TableObject):
-    first_index = 0x5A
+    first_index = WeaponObject.first_index + 0x5A
     flag = "q"
     mutate_attributes = {"power": (0, 99)}
 
@@ -184,16 +189,12 @@ class ArmorObject(ItemObject, TableObject):
     def equippable(self):
         return self.item2.equippable
 
+    def mutate(self):
+        if self.intershuffle_valid:
+            super(ArmorObject, self).mutate()
+
 
 class AccessoryObject(TableObject): pass
-
-
-class ConsumableObject(ItemObject, TableObject):
-    first_index = 0xBC
-
-    @property
-    def rank_price(self):
-        return self.price
 
 
 class Item2Object(TableObject):
@@ -208,8 +209,8 @@ class Item2Object(TableObject):
         return 0 <= self.index < 0x5A
 
     def mutate(self):
-        self.price = mutate_normal(self.price, minimum=0, maximum=65000)
-        value = self.price * 2
+        value = mutate_normal(self.price, minimum=0, maximum=65000)
+        value = value * 2
         power = 0
         while value > 10:
             value /= 10
@@ -310,7 +311,7 @@ class CharStatsObject(CharObject, TableObject):
 
 class Accessory2Object(ItemObject, TableObject):
     flag = "q"
-    first_index = 0x5A + 0x3A
+    first_index = ArmorObject.first_index + 0x3A
 
     @property
     def name(self):
@@ -323,6 +324,14 @@ class Accessory2Object(ItemObject, TableObject):
     def mutate(self):
         if bin(self.equippable).count('1') > 3:
             self.equippable = random.randint(1, 127) << 1
+
+
+class ConsumableObject(ItemObject, TableObject):
+    first_index = Accessory2Object.first_index + 0x28
+
+    @property
+    def rank_price(self):
+        return self.price
 
 
 class ItemNameObject(TableObject, TextObject): pass
