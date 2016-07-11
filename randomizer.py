@@ -459,7 +459,6 @@ class MonsterObject(TableObject):
         "lightning", "shadow", "water", "fire", "evade"]
     shuffle_attributes = [
         ("lightning", "shadow", "water", "fire"),
-        ("offense", "magic"),
         ]
 
     @property
