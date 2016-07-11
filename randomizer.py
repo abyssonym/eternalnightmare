@@ -3,7 +3,8 @@ from randomtools.utils import (
     classproperty, mutate_normal,
     utilrandom as random)
 from randomtools.interface import (
-    run_interface, rewrite_snes_meta, clean_and_write, finish_interface)
+    get_outfile, run_interface, rewrite_snes_meta,
+    clean_and_write, finish_interface)
 import string
 
 
@@ -19,6 +20,15 @@ texttable += [(0xFF, ' '), (0xE7, "'"), (0xE8, '.'), (0xEB, '-'),
 texttable += [(c, i) for (i, c) in texttable]
 texttable = dict(texttable)
 texttable[0xEF] = "~"
+
+
+def randomize_rng(address=0xFE00):
+    numbers = range(0x100)
+    random.shuffle(numbers)
+    f = open(get_outfile(), 'r+b')
+    f.seek(address)
+    f.write("".join([chr(n) for n in numbers]))
+    f.close()
 
 
 def bytes_to_text(data):
@@ -569,5 +579,7 @@ if __name__ == "__main__":
         for si in group:
             print "%x" % si.item, ItemObject.get(si.item).name
         print
+    randomize_rng(0xFE00)
+    randomize_rng(0x3DBA61)
     rewrite_snes_meta("CT-R", VERSION, megabits=32)
     finish_interface()
