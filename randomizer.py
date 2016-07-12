@@ -354,7 +354,9 @@ class TechObject(TableObject):
         return TechNameObject.get(self.index).name
 
 
-class TechMPObject(TableObject): pass
+class TechMPObject(TableObject):
+    flag = "c"
+    mutate_attributes = {"mp": (1, 99)}
 
 
 class GrowthObject:
@@ -405,12 +407,12 @@ class MPGrowthObject(GrowthObject, TableObject):
 class CharGrowthObject(CharObject, TableObject):
     flag = "c"
     mutate_attributes = {
-        "power": None,
-        "stamina": None,
-        "magic": None,
-        "hit": None,
-        "evade": None,
-        "mdef": None,
+        "power": (1, 0xFE),
+        "stamina": (1, 0xFE),
+        "magic": (1, 0xFE),
+        "hit": (1, 100),
+        "evade": (1, 100),
+        "mdef": (1, 0xFE),
         }
     intershuffle_attributes = [
         "power", "stamina", "magic", "hit", "evade", "mdef"]
@@ -421,8 +423,13 @@ class ExperienceObject(TableObject):
     mutate_attributes = {"experience": (1, 0xFFFE)}
 
 
-class DoubleReqObject(TableObject): pass
-class TripleReqObject(TableObject): pass
+class ReqMPObject(object):
+    flag = 'c'
+    shuffle_attributes = [("reqs",)]
+
+
+class DoubleReqMPObject(ReqMPObject, TableObject): pass
+class TripleReqMPObject(ReqMPObject, TableObject): pass
 
 
 class ShopItemObject(TableObject):
@@ -467,14 +474,14 @@ class MonsterObject(TableObject):
                          "level": (0, 99),
                          "speed": (1, 17),
                          "magic": (0, 254),
-                         "magic_defense": (0, 100),
+                         "magic_defense": (0, 0xFE),
                          "offense": (0, 255),
                          "defense": (0, 255),
                          "evade": (1, 100),
                          "hit": (0, 100),
                          }
     intershuffle_attributes = [
-        "offense", "speed", "magic", "hit",
+        "speed", "magic", "hit",
         "lightning", "shadow", "water", "fire", "evade"]
     shuffle_attributes = [
         ("lightning", "shadow", "water", "fire"),
@@ -609,6 +616,30 @@ class TreasureObject(TableObject):
 
 
 class LocationObject(TableObject): pass
+
+
+class ComboTechObject(TableObject): pass
+class ComboReqObject(TableObject):
+    flag = 'c'
+
+    @property
+    def is_double(self):
+        return not (1 <= self.reqs[2] <= 8)
+
+    @property
+    def is_triple(self):
+        return 1 <= self.reqs[2] <= 8
+
+    def mutate(self):
+        if random.choice([True, False]):
+            level = max([r for r in self.reqs if 1 <= r <= 8])
+        else:
+            level = random.randint(1, 4) + random.randint(0, 4)
+        newreqs = [level, random.randint(1, level)]
+        if self.is_triple:
+            newreqs.append(random.randint(1, level))
+        random.shuffle(newreqs)
+        self.reqs[:len(newreqs)] = newreqs
 
 
 def add_singing_mountain():

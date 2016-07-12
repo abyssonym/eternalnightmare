@@ -1,3 +1,11 @@
 unknown1,1
 hitrate,1
-unknown2,10
+misc1,bit:z11 hypno_wave0 z13 z14 z15 z16 magic_wall healing
+unknown2,2
+misc4,bit:standard_damage nonphysical u43 hypno_wave1 no_damage hypno_wave2 provoke z48
+misc5,bit:z51 nonelemental l53 u54 l56 l66 z67 z68
+misc6,bit:z61 z62 z63 z64 u65 u66 affects_magic_defense affects_defense_or_dead
+misc7,bit:z71 z72 z73 z74 z75 z76 z77 weapon_power
+damage,1
+misc8,bit:z81 rock_throw affects_physical z84 z85 slurp_cut rock_throw2 z88
+misc9,bit:z91 z92 z93 z94 z95 z96 heavy_unaffected u98
