@@ -349,6 +349,8 @@ class TechNameObject(TableObject, TextObject): pass
 
 
 class TechObject(TableObject):
+    flag = "c"
+    mutate_attributes = {"damage": (1, 0xFE)}
     @property
     def name(self):
         return TechNameObject.get(self.index).name
@@ -375,6 +377,9 @@ class GrowthObject:
 
     @classmethod
     def full_cleanup(cls):
+        if not any([hasattr(o, "mutated") for o in cls.every]):
+            cls.cleaned = True
+            return
         for group in cls.groups.values():
             while True:
                 levels = [o.level for o in group]
