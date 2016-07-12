@@ -487,7 +487,7 @@ class MonsterObject(TableObject):
                          }
     intershuffle_attributes = [
         "speed", "magic", "hit",
-        "lightning", "shadow", "water", "fire", "evade"]
+        ("lightning", "shadow", "water", "fire"), "evade"]
     shuffle_attributes = [
         ("lightning", "shadow", "water", "fire"),
         ]
