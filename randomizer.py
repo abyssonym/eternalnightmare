@@ -349,7 +349,9 @@ class TechNameObject(TableObject, TextObject): pass
 
 
 class TechObject(TableObject):
-    flag = "c"
+    flag = "k"
+    flag_description = "tech power, mp, and requirements"
+
     mutate_attributes = {"damage": (1, 0xFE)}
     @property
     def name(self):
@@ -357,7 +359,7 @@ class TechObject(TableObject):
 
 
 class TechMPObject(TableObject):
-    flag = "c"
+    flag = "k"
     mutate_attributes = {"mp": (1, 99)}
 
 
@@ -429,7 +431,7 @@ class ExperienceObject(TableObject):
 
 
 class ReqMPObject(object):
-    flag = 'c'
+    flag = 'k'
     shuffle_attributes = [("reqs",)]
 
 
@@ -635,7 +637,7 @@ class LocationObject(TableObject): pass
 
 
 class ComboReqObject(TableObject):
-    flag = 'c'
+    flag = 'k'
 
     @property
     def is_double(self):
