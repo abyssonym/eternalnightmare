@@ -9,7 +9,7 @@ import string
 
 
 RANDOMIZE = True
-VERSION = 3
+VERSION = 4
 ALL_OBJECTS = None
 
 
