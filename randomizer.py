@@ -100,11 +100,14 @@ class ItemObject(object):
     def rank_price(self):
         price = self.item2.price
         if ((self.is_armor or self.is_helmet) and price >= 20 and
-                (self.status_enabled or self.item2.element)):
+                (self.status_enabled or self.item2.element) and
+                not (hasattr(self, "repriced") and self.repriced == True)):
             if self.is_armor:
-                price *= 3
+                self.item2.price *= 3
             elif self.is_helmet:
-                price *= 2
+                self.item2.price *= 2
+            self.item2.price = min(self.item2.price, 65000)
+            self.repriced = True
         return price
 
     @property
@@ -343,7 +346,14 @@ class ConsumableObject(ItemObject, TableObject):
 
 class ItemNameObject(TableObject, TextObject): pass
 class TechNameObject(TableObject, TextObject): pass
-class TechObject(TableObject): pass
+
+
+class TechObject(TableObject):
+    @property
+    def name(self):
+        return TechNameObject.get(self.index).name
+
+
 class TechMPObject(TableObject): pass
 
 
