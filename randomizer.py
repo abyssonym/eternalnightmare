@@ -521,12 +521,25 @@ class MonsterObject(TableObject):
             for (attr, oldval) in oldstats.items():
                 if getattr(self, attr) < oldval:
                     setattr(self, attr, oldval)
+
+        def is_resistance(val):
+            return val >= 128 or val in [0, 1, 2]
+        elements = ["fire", "water", "lightning", "shadow"]
+
         while random.choice([True, False]):
-            el = random.choice(["fire", "water", "lightning", "shadow"])
+            el = random.choice(elements)
             if getattr(self, el) != 4 and random.choice([True, False]):
                 continue
             value = random.choice([0, 1, 2, 3, 4, 6, 8, 64,
                                    128, 129, 132, 143])
+            if is_resistance(value) and not is_resistance(getattr(self, el)):
+                for e in elements:
+                    if e == el:
+                        continue
+                    if not is_resistance(getattr(self, e)):
+                        break
+                else:
+                    continue
             setattr(self, el, value)
 
 
@@ -534,8 +547,6 @@ class DropObject(TableObject):
     flag = "t"
     mutate_attributes = {"xp": (0, 0xFFFE),
                          "gp": (0, 0xFFFE),
-                         #"item": ItemObject,
-                         #"charm": ItemObject,
                          "tp": (0, 0xFE)}
     intershuffle_attributes = [
         "item", "charm",
