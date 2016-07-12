@@ -27,5 +27,4 @@ MonsterNameObject   monster_name_table.txt  c6500   251
 #MonsterSkillObject  monster_skill_table.txt c7ac9   251
 #MonsterAIObject     monster_ai_table.txt    c8b08   251
 #PortraitObject      portrait_table.txt      3f1f80  7
-ComboTechObject     combo_table.txt         c1e54   69
 ComboReqObject      combo_req_table.txt     c27fa   55

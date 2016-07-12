@@ -623,7 +623,6 @@ class TreasureObject(TableObject):
 class LocationObject(TableObject): pass
 
 
-class ComboTechObject(TableObject): pass
 class ComboReqObject(TableObject):
     flag = 'c'
 
@@ -654,6 +653,36 @@ def add_singing_mountain():
         l.music = 0x52
 
 
+def randomize_battle_animations():
+    pointers = [1, 2, 7, 0xa, 0xb, 0xc, 0xd]
+    pointers = [p + 0xd4000 for p in pointers]
+    short = [0, 3, 8, 0xa, 0xc]
+    longg = [2, 4, 6]
+    special = [0xd, 33]
+    restricted = [6]
+    f = open(get_outfile(), "r+b")
+    for p in pointers:
+        if random.choice([True, False]):
+            continue
+        f.seek(p)
+        value = ord(f.read(1))
+        container = [l for l in [short, longg] if value in l][0]
+        notcontainer = [l for l in [short, longg] if l is not container][0]
+        if random.randint(1, 100) == 100:
+            # use special
+            value = random.choice(special)
+        elif random.choice([True, False]):
+            # use same type
+            value = random.choice(container)
+        else:
+            # use different type
+            candidates = [v for v in notcontainer if v not in restricted]
+            value = random.choice(candidates)
+        f.seek(p)
+        f.write(chr(value))
+    f.close()
+
+
 if __name__ == "__main__":
     print ("You are using the Chrono Trigger: Eternal Nightmare randomizer "
            "version %s." % VERSION)
@@ -663,6 +692,7 @@ if __name__ == "__main__":
     run_interface(ALL_OBJECTS, snes=True)
     minmax = lambda x: (min(x), max(x))
     add_singing_mountain()
+    randomize_battle_animations()
     clean_and_write(ALL_OBJECTS)
     randomize_rng(0xFE00)
     randomize_rng(0x3DBA61)
