@@ -705,7 +705,7 @@ if __name__ == "__main__":
     run_interface(ALL_OBJECTS, snes=True)
     minmax = lambda x: (min(x), max(x))
     add_singing_mountain()
-    randomize_battle_animations()
+    #randomize_battle_animations()
     clean_and_write(ALL_OBJECTS)
     randomize_rng(0xFE00)
     randomize_rng(0x3DBA61)
