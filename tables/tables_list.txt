@@ -8,23 +8,24 @@ Accessory2Object    accessory_2_table.txt   c0a1c   40
 ConsumableObject    consumable_table.txt    c0abc   54
 ItemNameObject      item_name_table.txt     c0b5e   243
 TechNameObject      tech_name_table.txt     c15cf   116
+#TechTargetObject    tech_target_table.txt   c1acb   85
 TechObject          tech_table.txt          c214b   56
 TechMPObject        tech_mp_table.txt       c253c   56
 HPGrowthObject      hp_growth_table.txt     c258a   28  grouped 4
 MPGrowthObject      mp_growth_table.txt     c25c2   28  grouped 4
 CharGrowthObject    char_growth_table.txt   c25fa   7
 ExperienceObject    experience_table.txt    c2634   98
+ComboReqObject      combo_req_table.txt     c27fa   55
 # The following are just MP requirements
 DoubleReqMPObject   double_mp_table.txt    c28db   45
 TripleReqMPObject   triple_mp_table.txt    c2935   15
 ShopItemObject      shop_item_table.txt     c2c6d   24  pointed c0000   2
 MonsterObject       monster_table.txt       c4700   251
 DropObject          drop_table.txt          c5e00   251
-TreasureObject      treasure_table.txt      35f402  249
-LocationObject      location_table.txt      360000  512
-#TechTargetObject    tech_target_table.txt   c1acb   85
 MonsterNameObject   monster_name_table.txt  c6500   251
 #MonsterSkillObject  monster_skill_table.txt c7ac9   251
 #MonsterAIObject     monster_ai_table.txt    c8b08   251
-#PortraitObject      portrait_table.txt      3f1f80  7
-ComboReqObject      combo_req_table.txt     c27fa   55
+TreasureObject      treasure_table.txt      35f402  249
+LocationObject      location_table.txt      360000  512
+PaletteObject       palette_table.txt       240000  253
+PortraitPaletteObject   portrait_palette_table.txt  3f1f80  7

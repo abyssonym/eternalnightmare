@@ -1,9 +1,9 @@
 from randomtools.tablereader import TableObject
 from randomtools.utils import (
-    classproperty, mutate_normal,
+    classproperty, mutate_normal, get_snes_palette_transformer,
     utilrandom as random)
 from randomtools.interface import (
-    get_outfile, run_interface, rewrite_snes_meta,
+    get_outfile, run_interface, rewrite_snes_meta, get_flags,
     clean_and_write, finish_interface)
 import string
 
@@ -11,6 +11,7 @@ import string
 RANDOMIZE = True
 VERSION = 4
 ALL_OBJECTS = None
+allow_palette_swap = False
 
 
 texttable = [(0xA0+i, c) for (i, c) in
@@ -659,6 +660,62 @@ class ComboReqObject(TableObject):
         self.reqs[:len(newreqs)] = newreqs
 
 
+class PaletteObject(TableObject):
+    flag = 'l'
+    flag_description = "character palettes"
+    invalid_mutations = {0:   [2,3],
+                         1:   range(0, 8) + range(10, 12),
+                         2:   range(0,5) + range(7,12) + range(10, 12),
+                         #3:   [],
+                         #4:   [0,1,2,3,4,6,7,8,9,10,11],
+                         5:   [2,3],
+                         6:   [2,3]}
+
+    @property
+    def colors(self):
+        return [getattr(self, "color%s" % i) for i in xrange(12)]
+
+    def set_colors(self, colors):
+        for i, c in enumerate(colors):
+            setattr(self, "color%s" % i, c)
+
+    def mutate(self):
+        t = get_snes_palette_transformer(middle=True)
+        self.transformer = t
+        newcolors = t(self.colors)
+        for i, color in enumerate(newcolors):
+            #if (self.index in self.invalid_mutations
+            #        and i in self.invalid_mutations[self.index]):
+            #    continue
+            setattr(self, "color%s" % i, color)
+
+    def write_data(self, filename):
+        if allow_palette_swap:
+            super(PaletteObject, self).write_data(filename)
+
+
+class PortraitPaletteObject(TableObject):
+    @classproperty
+    def after_order(self):
+        return [PaletteObject]
+
+    @property
+    def colors(self):
+        return [getattr(self, "color%s" % i) for i in xrange(12)]
+
+    def mutate(self):
+        chardict = {0: 6, 1: 3, 2: 4, 3: 0, 4: 5, 5: 2, 6: 1}
+        assert set(chardict.keys()) == set(chardict.values())
+        t = PaletteObject.get(chardict[self.index]).transformer
+        newcolors = t(self.colors)
+        for i, color in enumerate(newcolors):
+            setattr(self, "color%s" % i, color)
+
+    def write_data(self, filename):
+        if allow_palette_swap:
+            super(PortraitPaletteObject, self).write_data(filename)
+
+
 def add_singing_mountain():
     locs = [l for l in LocationObject.every if
             l.mapindex in [0x82, 0x83, 0x84, 0x90] and l.music == 0x3c]
@@ -703,9 +760,20 @@ if __name__ == "__main__":
                    if isinstance(g, type) and issubclass(g, TableObject)
                    and g not in [TableObject]]
     run_interface(ALL_OBJECTS, snes=True)
+
     minmax = lambda x: (min(x), max(x))
     add_singing_mountain()
     #randomize_battle_animations()
+    if "l" in get_flags():
+        answer = raw_input("WARNING: I've noticed that you decided to "
+                           "randomize the color palettes. It's not too "
+                           "late to turn back. Disabling this features "
+                           "has no effect on gameplay. Will you randomize "
+                           "the palettes? (y/n) ")
+        if answer and answer[0].lower() == 'n':
+            allow_palette_swap = False
+        else:
+            allow_palette_swap = True
     clean_and_write(ALL_OBJECTS)
     randomize_rng(0xFE00)
     randomize_rng(0x3DBA61)
