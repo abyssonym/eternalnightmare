@@ -701,7 +701,7 @@ class PortraitPaletteObject(TableObject):
 
     @property
     def colors(self):
-        return [getattr(self, "color%s" % i) for i in xrange(12)]
+        return [getattr(self, "color%s" % i) for i in xrange(16)]
 
     def mutate(self):
         chardict = {0: 6, 1: 3, 2: 4, 3: 0, 4: 5, 5: 2, 6: 1}
