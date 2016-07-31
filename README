@@ -1,6 +1,6 @@
 Chrono Trigger: Eternal Nightmare Randomizer
-Version:    4
-Date:       July 12, 2016
+Version:    5
+Date:       July 30, 2016
 URL:        https://github.com/abyssonym/eternalnightmare
 Contact:    https://twitter.com/abyssonym
             https://www.twitch.tv/abyssonym
@@ -22,6 +22,7 @@ Flags:
 
     c  Randomize character stats.
     k  Randomize tech power, mp, and requirements.
+    l  Randomize character palettes.
     m  Randomize enemy stats.
     p  Randomize shops.
     q  Randomize equipment stats.
