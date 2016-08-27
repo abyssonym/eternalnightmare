@@ -16,9 +16,8 @@ MPGrowthObject      mp_growth_table.txt     c25c2   28  grouped 4
 CharGrowthObject    char_growth_table.txt   c25fa   7
 ExperienceObject    experience_table.txt    c2634   98
 ComboReqObject      combo_req_table.txt     c27fa   55
-# The following are just MP requirements
-DoubleReqMPObject   double_mp_table.txt    c28db   45
-TripleReqMPObject   triple_mp_table.txt    c2935   15
+DoubleReqMPObject   double_mp_table.txt     c28db   45
+TripleReqMPObject   triple_mp_table.txt     c2935   15
 ShopItemObject      shop_item_table.txt     c2c6d   24  pointed c0000   2
 MonsterObject       monster_table.txt       c4700   251
 DropObject          drop_table.txt          c5e00   251

@@ -1,10 +1,11 @@
-from randomtools.tablereader import TableObject
+from randomtools.tablereader import TableObject, tblpath
 from randomtools.utils import (
     classproperty, mutate_normal, get_snes_palette_transformer,
     utilrandom as random)
 from randomtools.interface import (
     get_outfile, run_interface, rewrite_snes_meta, get_flags,
     clean_and_write, finish_interface)
+from os import path
 import string
 
 
@@ -21,6 +22,20 @@ texttable += [(0xFF, ' '), (0xE7, "'"), (0xE8, '.'), (0xEB, '-'),
 texttable += [(c, i) for (i, c) in texttable]
 texttable = dict(texttable)
 texttable[0xEF] = "~"
+
+
+BANNED_ITEMS_FILENAME = path.join(tblpath, "banned_items.txt")
+bif = open(BANNED_ITEMS_FILENAME)
+BANNED_ITEMS = [int(line.strip(), 0x10) for line in bif.readlines()
+                if line.strip()]
+bif.close()
+
+
+BANNED_MONSTERS_FILENAME = path.join(tblpath, "banned_monsters.txt")
+bmf = open(BANNED_MONSTERS_FILENAME)
+BANNED_MONSTERS = [int(line.strip(), 0x10) for line in bmf.readlines()
+                   if line.strip()]
+bmf.close()
 
 
 def randomize_rng(address=0xFE00):
@@ -115,7 +130,7 @@ class ItemObject(object):
     def intershuffle_valid(self):
         if isinstance(self, ConsumableObject) and self.get_bit("keyitem"):
             return False
-        return self.name != "~~~~~~~~~~"
+        return self.full_index not in BANNED_ITEMS
 
     @classproperty
     def every_item(self):
@@ -141,7 +156,7 @@ class ItemObject(object):
     @property
     def buyable(self):
         return self.intershuffle_valid and (self.rank_price >= 20 or
-            "Tonic" in self.name or "Heal" in self.name)
+            self.full_index in [0xbd, 0xc6])
 
     @property
     def rare(self):
@@ -509,7 +524,8 @@ class MonsterObject(TableObject):
 
     @property
     def intershuffle_valid(self):
-        return self.name != "~~~~~~~~~~~" and not self.get_bit("bosslike")
+        return (not self.get_bit("bosslike") and
+                not self.index in BANNED_MONSTERS)
 
     @property
     def name(self):
@@ -724,6 +740,7 @@ def add_singing_mountain():
 
 
 def randomize_battle_animations():
+    raise NotImplementedError
     pointers = [1, 2, 7, 0xa, 0xb, 0xc, 0xd]
     pointers = [p + 0xd4000 for p in pointers]
     short = [0, 3, 8, 0xa, 0xc]

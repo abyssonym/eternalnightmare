@@ -1,1 +1,2 @@
 CT_NA           a2bc447961e52fd2227baed164f729dc    tables_list.txt
+CT_JP           9d56fb54af198d43dcd62550767999df    tables_list_jp.txt
