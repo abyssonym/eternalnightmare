@@ -14,8 +14,9 @@ Running the randomizer:
     Windows users may use the executable file, "ct_eternal_nightmare.exe". Other users, please run "randomizer.py" using Python version 2.7.
 
 Source rom file:
-    This randomizer requires the North American SNES Chrono Trigger rom. The rom used for testing had the following verification hash.
-    MD5 - a2bc447961e52fd2227baed164f729dc
+    This randomizer requires the North American or Japanese Chrono Trigger rom for SNES. The roms used for testing had the following verification hash.
+    MD5 - a2bc447961e52fd2227baed164f729dc (NA)
+          9d56fb54af198d43dcd62550767999df (J)
 
 Flags:
     Input the following flags to customize your randomization experience.
