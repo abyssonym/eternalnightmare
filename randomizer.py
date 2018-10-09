@@ -1,7 +1,8 @@
-from randomtools.tablereader import TableObject, tblpath
+from randomtools.tablereader import (
+    TableObject, tblpath, mutate_normal
+    )
 from randomtools.utils import (
-    classproperty, mutate_normal, get_snes_palette_transformer,
-    utilrandom as random)
+    classproperty, get_snes_palette_transformer, utilrandom as random)
 from randomtools.interface import (
     get_outfile, run_interface, rewrite_snes_meta, get_flags,
     clean_and_write, finish_interface)
@@ -10,7 +11,7 @@ import string
 
 
 RANDOMIZE = True
-VERSION = 5
+VERSION = 6
 ALL_OBJECTS = None
 allow_palette_swap = False
 
@@ -176,7 +177,8 @@ class ItemObject(object):
         elif self.buyable:
             buyables = self.every_buyable
             index = buyables.index(self)
-            index = mutate_normal(index, minimum=0, maximum=len(buyables)-1)
+            index = mutate_normal(index, minimum=0, maximum=len(buyables)-1,
+                                  random_degree=self.random_degree)
             result = buyables[index]
         else:
             result = self
@@ -192,6 +194,7 @@ class ItemObject(object):
 class WeaponObject(ItemObject, TableObject):
     flag = "q"
     flag_description = "equipment stats"
+    custom_random_enable = True
     mutate_attributes = {"power": (0, 0xFE),
                          "critrate": (0, 100),
                          }
@@ -209,6 +212,7 @@ class WeaponObject(ItemObject, TableObject):
 class ArmorObject(ItemObject, TableObject):
     first_index = WeaponObject.first_index + 0x5A
     flag = "q"
+    custom_random_enable = True
     mutate_attributes = {"power": (0, 99)}
 
     @property
@@ -225,6 +229,7 @@ class AccessoryObject(TableObject): pass
 
 class Item2Object(TableObject):
     flag = "q"
+    custom_random_enable = True
 
     @property
     def name(self):
@@ -235,7 +240,8 @@ class Item2Object(TableObject):
         return 0 <= self.index < 0x5A
 
     def mutate(self):
-        value = mutate_normal(self.price, minimum=0, maximum=65000)
+        value = mutate_normal(self.price, minimum=0, maximum=65000,
+                              random_degree=self.random_degree)
         value = value * 2
         power = 0
         while value > 100:
@@ -250,6 +256,7 @@ class Item2Object(TableObject):
 class CharStatsObject(CharObject, TableObject):
     flag = "c"
     flag_description = "character stats"
+    custom_random_enable = True
 
     mutate_attributes = {
         "power_base": (1, 99),
@@ -259,7 +266,7 @@ class CharStatsObject(CharObject, TableObject):
         "hit_base": (1, 99),
         "evade_base": (1, 99),
         "mdef_base": (1, 99),
-        "level": (1, 99),
+        "level": None,
         #"helmet": Item2Object,
         #"armor": Item2Object,
         #"weapon": Item2Object,
@@ -289,8 +296,10 @@ class CharStatsObject(CharObject, TableObject):
 
         hpgroup = HPGrowthObject.getgroup(self.index)
         mpgroup = MPGrowthObject.getgroup(self.index)
-        max_hp = mutate_normal(85, minimum=1, maximum=999)
-        max_mp = mutate_normal(9, minimum=1, maximum=99)
+        max_hp = mutate_normal(85, minimum=1, maximum=999,
+                               random_degree=self.random_degree)
+        max_mp = mutate_normal(9, minimum=1, maximum=99,
+                               random_degree=self.random_degree)
         temp_level = 1
         while temp_level < self.level:
             temp_level += 1
@@ -337,6 +346,7 @@ class CharStatsObject(CharObject, TableObject):
 
 class Accessory2Object(ItemObject, TableObject):
     flag = "q"
+    custom_random_enable = True
     first_index = ArmorObject.first_index + 0x3A
 
     @property
@@ -367,6 +377,7 @@ class TechNameObject(TableObject, TextObject): pass
 class TechObject(TableObject):
     flag = "k"
     flag_description = "tech power, mp, and requirements"
+    custom_random_enable = True
 
     mutate_attributes = {"damage": (1, 0xFE)}
     @property
@@ -376,11 +387,13 @@ class TechObject(TableObject):
 
 class TechMPObject(TableObject):
     flag = "k"
+    custom_random_enable = True
     mutate_attributes = {"mp": (1, 99)}
 
 
 class GrowthObject:
     flag = "c"
+    custom_random_enable = True
     groupshuffle_enabled = True
 
     @classmethod
@@ -429,6 +442,7 @@ class MPGrowthObject(GrowthObject, TableObject):
 
 class CharGrowthObject(CharObject, TableObject):
     flag = "c"
+    custom_random_enable = True
     mutate_attributes = {
         "power": (1, 0xFE),
         "stamina": (1, 0xFE),
@@ -443,11 +457,13 @@ class CharGrowthObject(CharObject, TableObject):
 
 class ExperienceObject(TableObject):
     flag = "c"
+    custom_random_enable = True
     mutate_attributes = {"experience": (1, 0xFFFE)}
 
 
 class ReqMPObject(object):
     flag = 'k'
+    custom_random_enable = True
     shuffle_attributes = [("reqs",)]
 
 
@@ -458,6 +474,7 @@ class TripleReqMPObject(ReqMPObject, TableObject): pass
 class ShopItemObject(TableObject):
     flag = "p"
     flag_description = "shops"
+    custom_random_enable = True
 
     @classmethod
     def mutate_all(cls):
@@ -493,6 +510,7 @@ class MonsterNameObject(TableObject, TextObject): pass
 class MonsterObject(TableObject):
     flag = "m"
     flag_description = "enemy stats"
+    custom_random_enable = True
     mutate_attributes = {"hp": (0, 30000),
                          "level": (0, 99),
                          "speed": (1, 17),
@@ -564,6 +582,7 @@ class MonsterObject(TableObject):
 
 class DropObject(TableObject):
     flag = "t"
+    custom_random_enable = True
     mutate_attributes = {"xp": (0, 0xFFFE),
                          "gp": (0, 0xFFFE),
                          "tp": (0, 0xFE)}
@@ -602,13 +621,18 @@ class DropObject(TableObject):
         self.item = ItemObject.get(self.item).get_similar().full_index
         self.charm = ItemObject.get(self.charm).get_similar().full_index
         if self.monster.get_bit("bosslike"):
-            self.xp = 0
+            self.xp = min(self.xp, self.old_data['xp'])
+            self.xp = mutate_normal(self.xp, 0, self.xp, wide=True,
+                                    random_degree=self.random_degree)
+        else:
+            self.xp = max(self.xp, self.old_data['xp'])
         self.gp = self.gp >> 1
 
 
 class TreasureObject(TableObject):
     flag = "t"
     flag_description = "treasure"
+    custom_random_enable = True
 
     @property
     def contents_pretty(self):
@@ -640,7 +664,9 @@ class TreasureObject(TableObject):
                 return
             value = item.rank_price
         if random.randint(1, 20) == 20:
-            value = mutate_normal(value, minimum=0, maximum=65000)
+            value = min(65000, max(0, value))
+            value = mutate_normal(value, minimum=0, maximum=65000,
+                                  random_degree=self.random_degree)
             self.contents = 0x8000 | (value >> 1)
             return
         if item is None:
@@ -655,6 +681,7 @@ class LocationObject(TableObject): pass
 
 class ComboReqObject(TableObject):
     flag = 'k'
+    custom_random_enable = True
 
     @property
     def is_double(self):
@@ -711,6 +738,8 @@ class PaletteObject(TableObject):
 
 
 class PortraitPaletteObject(TableObject):
+    flag = 'l'
+
     @classproperty
     def after_order(self):
         return [PaletteObject]
@@ -776,7 +805,7 @@ if __name__ == "__main__":
     ALL_OBJECTS = [g for g in globals().values()
                    if isinstance(g, type) and issubclass(g, TableObject)
                    and g not in [TableObject]]
-    run_interface(ALL_OBJECTS, snes=True)
+    run_interface(ALL_OBJECTS, snes=True, custom_degree=True)
 
     minmax = lambda x: (min(x), max(x))
     add_singing_mountain()
@@ -784,7 +813,7 @@ if __name__ == "__main__":
     if "l" in get_flags():
         answer = raw_input("WARNING: I've noticed that you decided to "
                            "randomize the color palettes. It's not too "
-                           "late to turn back. Disabling this features "
+                           "late to turn back. Disabling this feature "
                            "has no effect on gameplay. Will you randomize "
                            "the palettes? (y/n) ")
         if answer and answer[0].lower() == 'n':
@@ -794,5 +823,5 @@ if __name__ == "__main__":
     clean_and_write(ALL_OBJECTS)
     randomize_rng(0xFE00)
     randomize_rng(0x3DBA61)
-    rewrite_snes_meta("CT-R", VERSION, megabits=32)
+    rewrite_snes_meta("CT-R", VERSION, lorom=False)
     finish_interface()

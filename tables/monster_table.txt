@@ -16,5 +16,5 @@ shadow,1
 water,1
 fire,1
 misc1,bit:z1 floating physical_invincible z2 z3 unk1 unk2 bosslike
-misc2,bit:bossdeath noscope unk_black_tyrano weird_defense aquatic z4 robotic
+misc2,bit:bossdeath noscope unk_black_tyrano weird_defense aquatic z4 robotic zx
 unknown3,1

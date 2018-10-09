@@ -28,3 +28,4 @@ TreasureObject      treasure_table.txt      35f402  249
 LocationObject      location_table.txt      360000  512
 PaletteObject       palette_table.txt       240000  253
 PortraitPaletteObject   portrait_palette_table.txt  3f1f80  7
+.option             b_to_walk_patch.txt
